@@ -1,25 +1,29 @@
-import logo from './logo.svg';
+import 'bootstrap/dist/css/bootstrap.min.css';
 import './App.css';
+import firebase from "firebase";
+import {Router} from "./Router";
+import {AuthProvider} from "./Auth";
 
-function App() {
+if(!firebase.apps.length) {
+    firebase.initializeApp({
+        apiKey: "AIzaSyCX8kz8LisBPhnw9KYo4iojDB0nw8BuJdI",
+        authDomain: "edilclima-did.firebaseapp.com",
+        databaseURL: "https://edilclima-did.firebaseio.com",
+        projectId: "edilclima-did",
+        storageBucket: "edilclima-did.appspot.com",
+        messagingSenderId: "237718875664",
+        appId: "1:237718875664:web:a49dd19c52d8074a76a495"
+    })
+}
+
+
+export default function App() {
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div>
+        <AuthProvider>
+            <Router />
+        </AuthProvider>
     </div>
   );
 }
-
-export default App;
