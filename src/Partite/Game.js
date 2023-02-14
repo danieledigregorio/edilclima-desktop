@@ -104,9 +104,11 @@ export function Game() {
     useEffect(() => {
         if(game?.status==='game' && !updatingImprevisto) {
             let lastdate = "1950-01-01 12:00:00"
-            game.imprevisti.map(a => {
-                if(moment(a.date,'YYYY-MM-DD H:mm:ss').isAfter(moment(lastdate,'YYYY-MM-DD H:mm:ss'))) lastdate = a.date
-            })
+            if(game?.imprevisti) {
+                game.imprevisti.map(a => {
+                    if(moment(a.date,'YYYY-MM-DD H:mm:ss').isAfter(moment(lastdate,'YYYY-MM-DD H:mm:ss'))) lastdate = a.date
+                })
+            }
             if(moment().diff(moment(lastdate, 'YYYY-MM-DD H:mm:ss'), 'seconds')>=5*60) {
                 setUpdatingImprevisto(true)
                 // AGGIUNGI IMPREVISTO
@@ -411,17 +413,19 @@ export function Game() {
         ["1", "2", "3", "4"].map(idGroup => {
 
             let co2 = 0
-            let soldi = 3000
+            let soldi = 10000
             let classeenergetica
 
-            Object.values(game.activities).filter(z => z.idGroup === idGroup).map(a => {
-                activities.filter(z => z.id===a.idEdit).map(z => {
-                    const dataattivita = z.options.filter(x => x.id===a.idChoice)[0]
+            if(game?.activities) {
+                Object.values(game.activities).filter(z => z.idGroup === idGroup).map(a => {
+                    activities.filter(z => z.id===a.idEdit).map(z => {
+                        const dataattivita = z.options.filter(x => x.id===a.idChoice)[0]
 
-                    co2 += dataattivita.co2
-                    soldi -= dataattivita.price
+                        co2 += dataattivita.co2
+                        soldi -= dataattivita.price
+                    })
                 })
-            })
+            }
 
             if (co2 >= 50) classeenergetica = "a"
             else if (40 <= co2 && co2 < 50) classeenergetica = "b"
@@ -456,7 +460,7 @@ export function Game() {
         ["1", "2", "3", "4"].map(idGroup => {
 
             let co2 = 0
-            let soldi = 3000
+            let soldi = 10000
             let qualita = 0
             let classeenergetica
             let turni = Object.values(game.activities).filter(a => a.idGroup === idGroup).length
@@ -504,7 +508,9 @@ export function Game() {
             })
         })
 
-        await firebase.database().ref(gameId).child("classifica").set(scores)
+
+
+        await firebase.database().ref(gameId).child("classifica").set(scores.sort((a,b) => a.points>b.points ? -1 : 1))
     }
 
     async function cambiaTurno(idGroup, newDate) {
