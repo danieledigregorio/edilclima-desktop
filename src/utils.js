@@ -31,13 +31,13 @@ export const activities = [
             {
                 id: "1",
                 co2: 35,
-                price: 450,
+                price: 250,
                 quality: 5,
             },
             {
                 id: "2",
                 co2: 98,
-                price: 250,
+                price: 450,
                 quality: 7,
             },
             {
@@ -77,9 +77,21 @@ export const activities = [
         options: [
             {
                 id: "1",
-                co2: 6,
-                price: 165,
+                co2: 43,
+                price: 369,
                 quality: 9,
+            },
+            {
+                id: "2",
+                co2: 65,
+                price: 59,
+                quality: 3,
+            },
+            {
+                id: "3",
+                co2: 57,
+                price: 126,
+                quality: 6,
             },
         ]
     },
@@ -212,13 +224,13 @@ export const activities = [
             {
                 id: "1",
                 co2: 35,
-                price: 450,
+                price: 250,
                 quality: 5,
             },
             {
                 id: "2",
                 co2: 98,
-                price: 250,
+                price: 450,
                 quality: 7,
             },
             {
@@ -324,3 +336,99 @@ export const activities = [
         ]
     },
 ]
+
+export const imprevisti = [
+    {
+        id : "a1",
+        co2 : 0,
+        price : 3000,
+        arduino: true,
+    },
+    {
+        id : "a2",
+        co2 : 0,
+        price : 400,
+        arduino: true,
+    },
+    {
+        id : "a3",
+        co2 : 0,
+        price : 600,
+        arduino: true,
+    },
+    {
+        id : "a4",
+        co2 : 0,
+        price : 2000,
+        arduino: true,
+    },
+    {
+        id : "1",
+        co2 : 0,
+        price : 500,
+        arduino: false,
+    },
+    {
+        id : "2",
+        co2 : 0,
+        price : 500,
+        arduino: false,
+    },
+    {
+        id : "3",
+        co2 : 0,
+        price : 500,
+        arduino: false,
+    },
+    {
+        id : "4",
+        co2 : 0,
+        price : 500,
+        arduino: false,
+    },
+    {
+        id : "5",
+        co2 : 0,
+        price : 800,
+        arduino: false,
+    },
+    {
+        id : "6",
+        co2 : 0,
+        price : -2500,
+        arduino: false,
+    },
+    {
+        id : "7",
+        co2 : 0,
+        price : -3000,
+        arduino: false,
+    },
+    {
+        id : "8",
+        co2 : 0,
+        price : -1500,
+        arduino: false,
+    },
+    {
+        id : "9",
+        co2 : 0,
+        price : -2000,
+        arduino: false,
+    },
+    {
+        id : "10",
+        co2 : 0,
+        price : -1000,
+        arduino: false,
+    },
+]
+
+export function getRandomImprevisto() {
+    const arr = imprevisti.filter(a => !a.arduino)
+    return arr[Math.floor(Math.random()*arr.length)].id
+}
+
+export function isRealImprevisto(id) {
+    return imprevisti.some(a => a.id === id)
+}

@@ -119,8 +119,9 @@ export function Partite() {
             id: gameId,
             docente: currentUser.uid,
             status: 'created',
-            date: moment().format('YYYY-MM-DD H:mm:ss'),
+            date: moment().format('YYYY-MM-DD HH:mm:ss'),
             activities: [],
+            arduino: "",
         })
     }
 }

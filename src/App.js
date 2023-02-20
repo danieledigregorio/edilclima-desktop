@@ -8,7 +8,7 @@ if(!firebase.apps.length) {
     firebase.initializeApp({
         apiKey: "AIzaSyCX8kz8LisBPhnw9KYo4iojDB0nw8BuJdI",
         authDomain: "edilclima-did.firebaseapp.com",
-        databaseURL: "https://edilclima-did.firebaseio.com",
+        databaseURL: "https://edilclima-did-default-rtdb.europe-west1.firebasedatabase.app",
         projectId: "edilclima-did",
         storageBucket: "edilclima-did.appspot.com",
         messagingSenderId: "237718875664",

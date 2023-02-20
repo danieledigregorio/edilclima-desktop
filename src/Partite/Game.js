@@ -1,5 +1,5 @@
 import {Link, useLocation} from "react-router-dom";
-import {Badge, Button, Col, Container, Form, Row} from "react-bootstrap";
+import {Badge, Button, Col, Container, Form, Row, Offcanvas, CloseButton} from "react-bootstrap";
 import {useEffect, useState} from "react";
 import firebase from "firebase";
 import moment from "moment";
@@ -19,7 +19,8 @@ import imgMeter from "../imgs/img_meter.png"
 import imgfirst from "../imgs/first.png"
 import imgsecond from "../imgs/second.png"
 import imgthird from "../imgs/third.png"
-import {activities} from "../utils";
+import {activities, getRandomImprevisto, imprevisti, isRealImprevisto} from "../utils";
+import imgTutorial from "../imgs/tutorial.png"
 
 
 export function Game() {
@@ -28,25 +29,25 @@ export function Game() {
         {
             idGroup: "1",
             co2: 0,
-            soldi: 3000,
+            soldi: 10000,
             classeenergetica: "f"
         },
         {
             idGroup: "2",
             co2: 0,
-            soldi: 3000,
+            soldi: 10000,
             classeenergetica: "f"
         },
         {
             idGroup: "3",
             co2: 0,
-            soldi: 3000,
+            soldi: 10000,
             classeenergetica: "f"
         },
         {
             idGroup: "4",
             co2: 0,
-            soldi: 3000,
+            soldi: 10000,
             classeenergetica: "f"
         }
     ])
@@ -64,6 +65,7 @@ export function Game() {
     }, [])
     let users = []
     if(game && game.users) users = Object.values(game.users)
+
 
     // CALCOLO TURNI
     const [updating, setUpdating] = useState(true)
@@ -90,12 +92,12 @@ export function Game() {
             ["1","2","3","4"].map(g => {
                 let lastdate = "1950-01-01 12:00:00"
                 game.turni.filter(a => a.idGroup===g).map(a => {
-                    if(moment(a.date,'YYYY-MM-DD H:mm:ss').isAfter(moment(lastdate,'YYYY-MM-DD H:mm:ss'))) lastdate = a.date
+                    if(moment(a.date,'YYYY-MM-DD HH:mm:ss').isAfter(moment(lastdate,'YYYY-MM-DD HH:mm:ss'))) lastdate = a.date
                 })
-                if(moment().diff(moment(lastdate, 'YYYY-MM-DD H:mm:ss'), 'seconds')>=180) {
+                if(moment().diff(moment(lastdate, 'YYYY-MM-DD HH:mm:ss'), 'seconds')>=180) {
                     setUpdating(true)
                     // CAMBIA TURNO
-                    cambiaTurno(g, moment().format('YYYY-MM-DD H:mm:ss')).then(() => setUpdated(true))
+                    cambiaTurno(g, moment().format('YYYY-MM-DD HH:mm:ss')).then(() => setUpdated(true))
                 }
             })
         }
@@ -106,13 +108,13 @@ export function Game() {
             let lastdate = "1950-01-01 12:00:00"
             if(game?.imprevisti) {
                 game.imprevisti.map(a => {
-                    if(moment(a.date,'YYYY-MM-DD H:mm:ss').isAfter(moment(lastdate,'YYYY-MM-DD H:mm:ss'))) lastdate = a.date
+                    if(moment(a.date,'YYYY-MM-DD HH:mm:ss').isAfter(moment(lastdate,'YYYY-MM-DD HH:mm:ss'))) lastdate = a.date
                 })
-            }
-            if(moment().diff(moment(lastdate, 'YYYY-MM-DD H:mm:ss'), 'seconds')>=5*60) {
+            } else if(game?.gamestartedat) lastdate = game.gamestartedat
+            if(moment().diff(moment(lastdate, 'YYYY-MM-DD HH:mm:ss'), 'seconds')>=5*60) {
                 setUpdatingImprevisto(true)
                 // AGGIUNGI IMPREVISTO
-                addImprevisto(moment().format("YYYY-MM-DD H:mm:ss")).then(() => setUpdatedImprevisto(true))
+                addImprevisto(moment().format("YYYY-MM-DD HH:mm:ss")).then(() => setUpdatedImprevisto(true))
             }
         }
     }, [checkImprevisto])
@@ -128,6 +130,8 @@ export function Game() {
         }
     }, [game])
 
+    const [tutorial, setTutorial] = useState(false)
+
     return (
         <Container className="div-dashboard">
             <div className="py-5">
@@ -135,23 +139,52 @@ export function Game() {
                     <div>
                         <h1>Partita <span className="fw-bold">{gameId}</span>
                             {
-                                game?.status!=='finished' ?
-                                    <Button
-                                        variant="danger"
-                                        className="rounded10 mb-2"
-                                        style={{marginLeft:'2em'}}
-                                        size="sm"
-                                        disabled={loading}
-                                        onClick={() => {
-                                            if(window.confirm("Vuoi terminare la partita " + gameId + "?\nL'azione è irreversibile.")) {
-                                                endGame()
-                                            }
-                                        }}
-                                    >
-                                        Termina partita
-                                    </Button>
+                                game?.status==='game' ?
+                                    <>
+                                        <Button
+                                            variant="danger"
+                                            className="rounded10 mb-2"
+                                            style={{marginLeft:'2em'}}
+                                            size="sm"
+                                            disabled={loading}
+                                            onClick={() => {
+                                                if(window.confirm("Vuoi terminare la partita " + gameId + "?\nL'azione è irreversibile.")) {
+                                                    endGame()
+                                                }
+                                            }}
+                                        >
+                                            <b>Termina partita</b>
+                                        </Button>
+                                        <Button
+                                            variant="success"
+                                            className="rounded10 mb-2"
+                                            style={{marginLeft:'2em'}}
+                                            size="sm"
+                                            onClick={() => {
+                                                setTutorial(true)
+                                            }}
+                                        >
+                                            <b>Apri Tutorial</b>
+                                        </Button>
+                                    </>
                                     :
-                                    <span>&nbsp;-&nbsp;<strong>CLASSIFICA</strong></span>
+                                    game?.status==='finished' ?
+                                        <span>&nbsp;-&nbsp;<strong>CLASSIFICA</strong></span>
+                                        :
+                                        game?.status==='created' ?
+                                            <Button
+                                                variant="success"
+                                                className="rounded10 mb-2"
+                                                style={{marginLeft:'2em'}}
+                                                size="md"
+                                                onClick={() => {
+                                                    setTutorial(true)
+                                                }}
+                                            >
+                                                <b>Apri Tutorial</b>
+                                            </Button>
+                                            :
+                                            null
                             }
                         </h1>
                     </div>
@@ -182,15 +215,7 @@ export function Game() {
                                         value={mac}
                                         onChange={e => {
                                             const i = e.target.value.trim().toUpperCase()
-                                            let a = 0
-                                            let b = 0
-                                            if(i.length>=1) a = i.charCodeAt(i.length-1)
-                                            if(i.length>=2) b = i.charCodeAt(i.length-2)
-                                            if(((a>47 && a<58) || (a>64 && a<91)) && ((b>47 && b<58) || (b>64 && b<91))) {
-                                                if(i.length<=13) setMac(i + "-")
-                                                else if(i.length<=14) setMac(i)
-                                                else setMac(mac)
-                                            } else setMac(i)
+                                            setMac(i)
                                         }}
                                         placeholder="XX-XX-XX-XX-XX-XX"
                                         className="rounded10 w-auto text-center"
@@ -246,6 +271,35 @@ export function Game() {
                                 null
                 }
             </div>
+
+            <Offcanvas show={tutorial} onHide={() => setTutorial(false)} placement="end" style={{width:'100vw', padding:'3em', backgroundColor:'#1c1c1c', color:"#fff"}}>
+                <Offcanvas.Header>
+                    <Offcanvas.Title className="text-center w-100"><h2 className="fw-bold">Tutorial</h2></Offcanvas.Title>
+                    <CloseButton variant="white" onClick={() => setTutorial(false)} />
+                </Offcanvas.Header>
+                <Offcanvas.Body>
+                    <Row className="h-100">
+                        <Col md={5} className="text-start d-flex justify-content-center align-items-center">
+                            <div>
+                                <h4 className="mb-4">La classe verrà suddivisa in <b>4 squadre</b>.</h4>
+                                <h5 className="mb-4">Sullo schermo scoprirete quale <b>appartamento</b> del palazzo diventerà la vostra casa e chi saranno <b>i vostri coinquilini</b> tra i vostri compagni.</h5>
+                                <h5 className="mb-4">Le squadre giocheranno in contemporanea e ogni coinquilino dovrà scegliere quale <b>modifica</b> apportare all’appartamento per migliorarne la <b>classe energetica</b>.</h5>
+                                <h4 className="mb-4 text-decoration-underline">Attenzione allo scorrere del tempo!</h4>
+                                <h5 className="mb-4"><b>Vince</b> la squadra che raggiunge la <b>classe energetica più alta</b>, ma che <b>spende meno soldi</b> e ha una <b>qualità di vita migliore</b>.</h5>
+                                <h4 className="text-decoration-underline">Attenzione agli imprevisti!</h4>
+                            </div>
+                        </Col>
+                        <Col md={7} className="d-flex justify-content-center align-items-center">
+                            <img
+                                src={imgTutorial}
+                                alt="Img tutorial"
+                                style={{width: "40vw"}}
+                            />
+                        </Col>
+                    </Row>
+                </Offcanvas.Body>
+            </Offcanvas>
+
         </Container>
     )
 
@@ -362,11 +416,11 @@ export function Game() {
             if(count!==3) count++
             else count=0
         }
-        const starttime = moment().format('YYYY-MM-DD H:mm:ss')
+        const starttime = moment().format('YYYY-MM-DD HH:mm:ss')
         await firebase.database().ref(gameId).update({
             status: 'game',
             gamestartedat: starttime,
-            arduino: mac,
+            arduino: "",
             gruppi: [
                 {
                     idGroup: "1",
@@ -404,6 +458,9 @@ export function Game() {
                 },
             ],
         }).then(() => setLoading(false))
+
+        await firebase.database().ref(gameId).child("arduino").set(mac)
+            .then(() => {})
     }
 
     function calcStats() {
@@ -426,12 +483,21 @@ export function Game() {
                     })
                 })
             }
+            if(game?.imprevisti) {
+                Object.values(game.imprevisti).map(a => {
+                    if(isRealImprevisto(a.id)) {
+                        const dataimp = imprevisti.filter(z => z.id===a.id)[0]
+                        co2 += dataimp.co2
+                        soldi -= dataimp.price
+                    }
+                })
+            }
 
-            if (co2 >= 50) classeenergetica = "a"
-            else if (40 <= co2 && co2 < 50) classeenergetica = "b"
-            else if (30 <= co2 && co2 < 40) classeenergetica = "c"
-            else if (20 <= co2 && co2 < 30) classeenergetica = "d"
-            else if (10 <= co2 && co2 < 20) classeenergetica = "e"
+            if (co2 >= 3220) classeenergetica = "a"
+            else if (2699 <= co2 && co2 < 3220) classeenergetica = "b"
+            else if (2118 <= co2 && co2 < 2699) classeenergetica = "c"
+            else if (1567 <= co2 && co2 < 2118) classeenergetica = "d"
+            else if (1016 <= co2 && co2 < 1567) classeenergetica = "e"
             else classeenergetica = "f"
 
             scores.push({
@@ -490,17 +556,17 @@ export function Game() {
                     qualita += defaultactivity.quality
                 }
             })
-            if (co2 >= 50) classeenergetica = "a"
-            else if (40 <= co2 && co2 < 50) classeenergetica = "b"
-            else if (30 <= co2 && co2 < 40) classeenergetica = "c"
-            else if (20 <= co2 && co2 < 30) classeenergetica = "d"
-            else if (10 <= co2 && co2 < 20) classeenergetica = "e"
+            if (co2 >= 3220) classeenergetica = "a"
+            else if (2699 <= co2 && co2 < 3220) classeenergetica = "b"
+            else if (2118 <= co2 && co2 < 2699) classeenergetica = "c"
+            else if (1567 <= co2 && co2 < 2118) classeenergetica = "d"
+            else if (1016 <= co2 && co2 < 1567) classeenergetica = "e"
             else classeenergetica = "f"
 
 
             scores.push({
                 idGroup: idGroup,
-                points: turni !== 0 ? (co2 + soldi + qualita) / turni : 0,
+                points: turni !== 0 ? (100*co2 + soldi/10 + 10*qualita) / turni : 0,
                 co2: co2,
                 soldi: soldi,
                 qualita: qualita,
@@ -522,9 +588,9 @@ export function Game() {
     }
 
     async function addImprevisto(newDate) {
-        await  firebase.database().ref(gameId).child("imprevisti").child(game.imprevisti.length.toString()).set({
+        await  firebase.database().ref(gameId).child("imprevisti").child(game?.imprevisti ? game.imprevisti.length.toString() : "0").set({
             date: newDate,
-            id: 1,
+            id: getRandomImprevisto(),
         })
     }
 }
